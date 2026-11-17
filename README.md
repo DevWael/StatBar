@@ -43,16 +43,18 @@ Temperatures use the unit set in System Settings → General → Language & Regi
 
 ## Resource use
 
-Sensors are only read for what is on screen: the ticked metrics, plus everything while the panel is open. Nothing runs when the bar shows only the icon and the panel is closed, or when the displays are asleep.
+Sensors are only read for what is on screen: the ticked metrics, plus everything while the panel is open. Nothing runs when the bar shows only the icon and the panel is closed. While the displays are asleep the timer still fires once a second but skips all work.
 
-Measured on the M1 Pro:
+Measured on the M1 Pro. Memory is the physical footprint, the number Activity Monitor shows.
 
-| State | CPU time per minute | Memory (RSS) |
+| State | CPU time per minute | Memory |
 | --- | --- | --- |
-| Icon only, panel closed | 0 s | ~70 MB |
-| 4 metrics in the bar | ~1.3 s | ~80 MB |
+| Icon only, panel closed | 0 s | 14 MB |
+| 8 metrics in the bar | ~1.7 s | 19 MB |
 
-On macOS 27 most of the cost of updating a menu bar item every second sits in AppKit, not in the app. A test app that only changes a status item's title once a second used 1.28 s of CPU per minute on the same machine. StatBar's sensor reads and drawing add about 0.06 s per minute on top of that. Most of the RSS is AppKit's shared memory.
+On macOS 27 most of the cost of updating a menu bar item every second sits in AppKit, not in the app. A test app that only changes a status item's title once a second used 1.28 s of CPU per minute and 13–14 MB on the same machine.
+
+The app checks `CGDisplayIsAsleep` on each tick instead of subscribing to `NSWorkspace` sleep notifications. `NSWorkspace` loads a private copy of the LaunchServices database, which added about 12 MB.
 
 ## Where the numbers come from
 

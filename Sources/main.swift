@@ -8,7 +8,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var pickerItems: [NSMenuItem] = []
     private var timer: Timer?
     private var menuOpen = false
-    private var screensAsleep = false
     private var lastBarText: [String]?
     private var appearanceObservation: NSKeyValueObservation?
     private var barColor: NSColor?
@@ -56,16 +55,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
 
-        let center = NSWorkspace.shared.notificationCenter
-        center.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
-            self?.screensAsleep = true
-            self?.updateTimer()
-        }
-        center.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
-            self?.screensAsleep = false
-            self?.updateTimer()
-        }
-
         panel.show(Snapshot())
         tick()
         updateTimer()
@@ -97,7 +86,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Runs only while there is something on screen to update.
     private func updateTimer() {
-        let shouldRun = !screensAsleep && (menuOpen || !picked.isEmpty)
+        let shouldRun = menuOpen || !picked.isEmpty
         if shouldRun, timer == nil {
             let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
             timer.tolerance = 0.1
@@ -110,6 +99,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func tick() {
+        // Skip the work while the display is off. Checked here instead of
+        // through NSWorkspace notifications: NSWorkspace loads a private copy
+        // of the LaunchServices database (~12 MB).
+        if !menuOpen, CGDisplayIsAsleep(CGMainDisplayID()) != 0 { return }
         let needed = menuOpen ? Set(Metric.allCases) : picked
         let snapshot = needed.isEmpty ? Snapshot() : sampler.sample(needed)
         if menuOpen { panel.show(snapshot) }

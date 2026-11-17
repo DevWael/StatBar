@@ -92,6 +92,10 @@ Sources/
   Format.swift  number formatting for the bar and the panel
   Views.swift   menu bar image and detail panel
   main.swift    status item, menu, timer
+Resources/
+  AppIcon.icns  app icon, made by tools/make-icon.swift
+tools/
+  make-icon.swift  renders the icon to a 1024px PNG
 Info.plist
 build.sh
 ```

@@ -79,10 +79,12 @@ final class PanelView: NSView {
     }()
 
     init() {
-        super.init(frame: NSRect(x: 0, y: 0, width: 420, height: 10))
+        super.init(frame: NSRect(x: 0, y: 0, width: 470, height: 10))
         label.isSelectable = false
         label.maximumNumberOfLines = 0
-        label.preferredMaxLayoutWidth = 392
+        label.lineBreakMode = .byWordWrapping
+        label.cell?.wraps = true
+        label.preferredMaxLayoutWidth = 442
         addSubview(label)
     }
 
@@ -99,11 +101,15 @@ final class PanelView: NSView {
         text.addAttribute(.paragraphStyle, value: paragraph, range: NSRange(location: 0, length: text.length))
         label.attributedStringValue = text
 
-        let size = label.fittingSize
-        let height = size.height + 12
+        // Measure at the real width so a wrapped row adds to the height
+        // instead of pushing the last rows out of view.
+        let width = frame.width - 28
+        let textHeight = ceil(label.cell?.cellSize(forBounds: NSRect(x: 0, y: 0, width: width, height: .greatestFiniteMagnitude)).height
+            ?? label.fittingSize.height)
+        let height = textHeight + 12
         if frame.height != height {
             setFrameSize(NSSize(width: frame.width, height: height))
         }
-        label.frame = NSRect(x: 14, y: 6, width: frame.width - 28, height: size.height)
+        label.frame = NSRect(x: 14, y: 6, width: width, height: textHeight)
     }
 }

@@ -143,7 +143,7 @@ enum Format {
             ("Disk", "read \(rate(s.diskRead)) · write \(rate(s.diskWrite))"),
             ("Network", "down \(rate(s.netIn)) · up \(rate(s.netOut))"),
             ("", ""),
-            ("CPU temp", spacedTemp(s.cpuTemp) + (s.cpuTemp == nil ? "" : " hottest core")),
+            ("CPU temp", spacedTemp(s.cpuTemp)),
             ("GPU temp", spacedTemp(s.gpuTemp)),
             ("Battery temp", spacedTemp(s.batteryTemp)),
             ("Fans", fans),

@@ -13,9 +13,24 @@ enum Format {
         return String(format: "%.\(digits)f", bytes / 1_073_741_824)
     }
 
+    /// Follows System Settings > General > Language & Region > Temperature.
+    /// macOS only stores the key once the user picks a unit; until then the
+    /// region decides (Fahrenheit for US measurement, Celsius otherwise).
+    static var fahrenheit: Bool {
+        switch UserDefaults.standard.string(forKey: "AppleTemperatureUnit") {
+        case "Fahrenheit": return true
+        case "Celsius": return false
+        default: return Locale.autoupdatingCurrent.measurementSystem == .us
+        }
+    }
+
+    private static func degrees(_ celsius: Double) -> Int {
+        Int((fahrenheit ? celsius * 9 / 5 + 32 : celsius).rounded())
+    }
+
     static func temp(_ v: Double?) -> String {
         guard let v else { return dash }
-        return "\(Int(v.rounded()))°"
+        return "\(degrees(v))°"
     }
 
     static func watts(_ v: Double?) -> String {
@@ -52,7 +67,7 @@ enum Format {
     static func bar(_ metric: Metric, _ s: Snapshot) -> String {
         switch metric {
         case .cpu: return percent(s.cpu)
-        case .memory: return s.memUsed == nil ? dash : gigabytes(s.memUsed) + "G"
+        case .memory: return percent(memoryFraction(s))
         case .gpu: return percent(s.gpu)
         case .disk: return "R\(shortRate(s.diskRead)) W\(shortRate(s.diskWrite))"
         case .network: return "↓\(shortRate(s.netIn)) ↑\(shortRate(s.netOut))"
@@ -72,8 +87,7 @@ enum Format {
     /// Widest text a metric can show, so its slot in the bar never resizes.
     static func barTemplate(_ metric: Metric) -> String {
         switch metric {
-        case .cpu, .gpu: return "100%"
-        case .memory: return "99.9G"
+        case .cpu, .gpu, .memory: return "100%"
         case .disk: return "R99.9M W99.9M"
         case .network: return "↓99.9M ↑99.9M"
         case .cpuTemp, .gpuTemp, .batteryTemp: return "100°"
@@ -111,7 +125,7 @@ enum Format {
         case 4: pressure = "critical"
         default: pressure = dash
         }
-        let memory = "\(gigabytes(s.memUsed)) of \(gigabytes(s.memTotal, digits: 0)) GB · pressure \(pressure) · swap \(gigabytes(s.swapUsed)) GB"
+        let memory = "\(percent(memoryFraction(s)))   \(gigabytes(s.memUsed)) of \(gigabytes(s.memTotal, digits: 0)) GB · pressure \(pressure) · swap \(gigabytes(s.swapUsed)) GB"
 
         let fans = s.fans.isEmpty ? dash : s.fans.map { $0 < 1 ? "off" : "\(Int($0.rounded())) rpm" }.joined(separator: " · ")
 
@@ -136,7 +150,7 @@ enum Format {
             battery = dash
         }
 
-        return [
+        let rows = [
             ("CPU", cpu),
             ("Memory", memory),
             ("GPU", percent(s.gpu)),
@@ -153,6 +167,19 @@ enum Format {
             ("Charger", charger),
             ("Battery", battery),
         ]
+        // Keep numbers and their units on the same line when a row wraps.
+        return rows.map { name, value in
+            var value = value
+            for unit in [" GB", " KB/s", " MB/s", " GB/s", " W", " °C", " °F", " rpm"] {
+                value = value.replacingOccurrences(of: unit, with: "\u{00A0}" + unit.dropFirst())
+            }
+            return (name, value)
+        }
+    }
+
+    private static func memoryFraction(_ s: Snapshot) -> Double? {
+        guard let used = s.memUsed, s.memTotal > 0 else { return nil }
+        return used / s.memTotal
     }
 
     private static func spaced(_ w: String) -> String {
@@ -161,6 +188,6 @@ enum Format {
 
     private static func spacedTemp(_ v: Double?) -> String {
         guard let v else { return dash }
-        return "\(Int(v.rounded())) °C"
+        return "\(degrees(v)) " + (fahrenheit ? "°F" : "°C")
     }
 }

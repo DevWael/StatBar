@@ -23,16 +23,18 @@ The app is signed ad hoc, so it only runs on the machine that built it unless yo
 
 Click the icon to open the detail panel. Under **Show in Menu Bar**, tick the metrics you want next to the icon. With nothing ticked the bar shows only the icon. Your picks are saved in `~/Library/Preferences/local.statbar.plist`.
 
+Temperatures use the unit set in System Settings → General → Language & Region → Temperature. If none is set, the region's default is used.
+
 | Metric | Panel | Menu bar |
 | --- | --- | --- |
 | CPU usage | total, P-cores, E-cores | total % |
-| Memory | used of total, pressure, swap | used GB |
+| Memory | used %, used of total GB, pressure, swap | used % |
 | GPU usage | % | % |
 | Disk activity | read and write per second | R/W per second |
 | Network activity | down and up per second | down/up per second |
-| CPU temperature | °C | °C |
+| CPU temperature | °C or °F | °C or °F |
 | GPU temperature | hottest sensor | hottest sensor |
-| Battery temperature | °C | °C |
+| Battery temperature | °C or °F | °C or °F |
 | Fan speed | each fan, rpm | fastest fan, rpm |
 | System power | whole machine, W | W |
 | GPU power | W | W |

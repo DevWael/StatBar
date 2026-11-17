@@ -30,7 +30,7 @@ Click the icon to open the detail panel. Under **Show in Menu Bar**, tick the me
 | GPU usage | % | % |
 | Disk activity | read and write per second | R/W per second |
 | Network activity | down and up per second | down/up per second |
-| CPU temperature | hottest core | hottest core |
+| CPU temperature | °C | °C |
 | GPU temperature | hottest sensor | hottest sensor |
 | Battery temperature | °C | °C |
 | Fan speed | each fan, rpm | fastest fan, rpm |
@@ -62,7 +62,7 @@ On macOS 27 most of the cost of updating a menu bar item every second sits in Ap
 | GPU usage | `IOAccelerator` → `PerformanceStatistics` → `Device Utilization %` |
 | Disk | `IOBlockStorageDriver` → `Statistics` byte counters |
 | Network | `NET_RT_IFLIST2` sysctl, `en*` interfaces only |
-| CPU temperature | SMC key `TCMz` (hottest CPU core), falling back to the max of `Tp*`/`Te*` keys |
+| CPU temperature | SMC key `TCMz`, falling back to the max of `Tp*`/`Te*` keys |
 | GPU temperature | max of SMC `Tg*` keys |
 | Battery temperature | SMC `TB0T` |
 | Fans | SMC `FNum`, `F<n>Ac` |
